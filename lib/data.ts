@@ -1,17 +1,13 @@
 import { 
-  AlignJustify,
   LayoutGrid, 
   Users, 
   GraduationCap, 
   FileText, 
   FileCode2, 
-  Bot, 
   BarChart3, 
   Wallet, 
   History, 
-  Settings, 
-  LogOut, 
-  Sparkles 
+  Brain
 } from "lucide-react";
 
 export const sidebarData = [
@@ -33,7 +29,7 @@ export const sidebarData = [
   {
     group: "ANALYTICS & LOGS",
     items: [
-      { name: "AI Performance", href: "/ai-performance", icon: Bot },
+      { name: "AI Performance", href: "/ai-performance", icon: Brain },
       { name: "Reports", href: "/reports", icon: BarChart3 },
       { name: "Credits", href: "/credits", icon: Wallet },
       { name: "Logs", href: "/logs", icon: History },

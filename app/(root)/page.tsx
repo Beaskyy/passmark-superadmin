@@ -1,7 +1,10 @@
+import Overview from "@/components/overview"
 
 const DashboardPage = () => {
   return (
-    <div>DashboardPage</div>
+    <div className="text-white">
+      <Overview />
+    </div>
   )
 }
 

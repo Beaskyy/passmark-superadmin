@@ -45,15 +45,15 @@ export const Header = () => {
   };
 
   return (
-    <header className="px-6 h-[72px] border-b border-[#1E293B] bg-[#0F172A] flex items-center justify-between sticky top-0 z-50">
+    <header className="px-6 h-16 border-b border-[#334155] bg-[#1E293BCC] flex items-center justify-between sticky top-0 z-50">
       
       {/* 1. Left Side: Search Bar */}
       <div className="flex-1 max-w-2xl">
-        <div className="relative group">
+        <div className="relative group max-w-[576px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B] w-5 h-5 group-focus-within:text-[#3B82F6] transition-colors" />
           <Input
             type="text"
-            className="h-[44px] w-full bg-[#1E293B] border border-[#334155] rounded-lg pl-10 pr-20 text-[#CBD5E1] placeholder:text-[#64748B] focus-visible:ring-1 focus-visible:ring-[#3B82F6] focus-visible:ring-offset-0 focus-visible:border-[#3B82F6]"
+            className="w-full bg-[#101622] border-none rounded-lg pl-10 pr-20 h-9 text-[#CBD5E1] placeholder:text-[#64748B] focus-visible:ring-1 focus-visible:ring-[#3B82F6] focus-visible:ring-offset-0 focus-visible:border-[#3B82F6]"
             placeholder="Search assessments, users, or scripts..."
           />
           {/* Keyboard Shortcuts */}

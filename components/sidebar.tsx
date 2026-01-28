@@ -14,7 +14,7 @@ export const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="w-[272px] bg-[#0B1120] h-screen fixed flex flex-col border-r border-[#1E293B]">
+    <div className="w-[288px] bg-[#0B1120] h-screen fixed flex flex-col border-r border-[#1E293B]">
       
       {/* 1. Header Section */}
       <div className="px-6 py-8 flex items-center gap-3">

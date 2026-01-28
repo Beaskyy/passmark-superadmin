@@ -53,7 +53,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         )}
         <div
           className={`min-h-screen w-full ${
-            activeMenu ? "md:ml-[272px]" : "flex-2"
+            activeMenu ? "md:ml-[288px]" : "flex-2"
           }`}
         >
           <div className="fixed md:static w-full z-20">
@@ -61,7 +61,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
         <div
-          className={`absolute top-16 transition-all duration-300 ${
+          className={`absolute top-20 px-5 transition-all duration-300 ${
             activeMenu
               ? "md:w-[calc(100%-288px)] w-full overflow-hidden md:left-[288px]"
               : "w-full md:left-0"
