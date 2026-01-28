@@ -1,0 +1,42 @@
+import { 
+  AlignJustify,
+  LayoutGrid, 
+  Users, 
+  GraduationCap, 
+  FileText, 
+  FileCode2, 
+  Bot, 
+  BarChart3, 
+  Wallet, 
+  History, 
+  Settings, 
+  LogOut, 
+  Sparkles 
+} from "lucide-react";
+
+export const sidebarData = [
+  {
+    group: "OVERVIEW",
+    items: [
+      { name: "Dashboard", href: "/", icon: LayoutGrid },
+    ],
+  },
+  {
+    group: "MANAGEMENT",
+    items: [
+      { name: "Users", href: "/users", icon: Users },
+      { name: "Courses", href: "/courses", icon: GraduationCap },
+      { name: "Assessments", href: "/assessments", icon: FileText },
+      { name: "Scripts", href: "/scripts", icon: FileCode2, badge: "New" },
+    ],
+  },
+  {
+    group: "ANALYTICS & LOGS",
+    items: [
+      { name: "AI Performance", href: "/ai-performance", icon: Bot },
+      { name: "Reports", href: "/reports", icon: BarChart3 },
+      { name: "Credits", href: "/credits", icon: Wallet },
+      { name: "Logs", href: "/logs", icon: History },
+    ],
+  },
+];
