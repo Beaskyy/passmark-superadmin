@@ -17,8 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   // 1. Define your form schema
@@ -26,8 +30,8 @@ const Login = () => {
     email: z.string().email({
       message: "Please enter a valid email address.",
     }),
-    password: z.string().min(6, {
-      message: "Password must be at least 6 characters.",
+    password: z.string().min(5, {
+      message: "Password must be at least 5 characters.",
     }),
   });
   // 2. Define your form.
@@ -39,11 +43,27 @@ const Login = () => {
     },
   });
 
-  // 3. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false, // Important: prevent auto redirect to handle errors
+      });
+
+      if (result?.error) {
+        toast.error("Invalid email or password");
+        return;
+      }
+
+      toast.success("Logged in successfully");
+      router.push("/"); // Redirect to dashboard
+      router.refresh(); // Ensure server components update
+    } catch (error) {
+      console.error("Login error:", error); // Now it is used
+      toast.error("Something went wrong");
+    }
   }
 
   const date = new Date();
