@@ -17,56 +17,86 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
+const formSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z.string().min(5, { message: "Password must be at least 5 characters." }),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+type LoginApiResponse = {
+  user: { id: string; email: string; name: string };
+  accessToken: string;
+};
+
+async function loginWithApi(email: string, password: string): Promise<LoginApiResponse> {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  let data: { error?: string; user?: { id: string; email: string; name: string }; accessToken?: string };
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(res.ok ? "Invalid response from server" : "Something went wrong");
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error ?? "Invalid email or password");
+  }
+
+  if (!data?.user?.email || !data?.accessToken) {
+    throw new Error("Invalid response from server");
+  }
+
+  return data as LoginApiResponse;
+}
 
 const Login = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
-  // 1. Define your form schema
-  const formSchema = z.object({
-    email: z.string().email({
-      message: "Please enter a valid email address.",
-    }),
-    password: z.string().min(5, {
-      message: "Password must be at least 5 characters.",
-    }),
-  });
-  // 2. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
+  const loginMutation = useMutation({
+    mutationFn: ({ email, password }: FormValues) => loginWithApi(email, password),
+    onSuccess: async (data) => {
       const result = await signIn("credentials", {
-        email: values.email,
-        password: values.password,
-        redirect: false, // Important: prevent auto redirect to handle errors
+        token: data.accessToken,
+        userPayload: JSON.stringify(data.user),
+        redirect: false,
       });
 
       if (result?.error) {
-        toast.error("Invalid email or password");
+        toast.error("Session could not be created. Please try again.");
         return;
       }
 
       toast.success("Logged in successfully");
-      router.push("/"); // Redirect to dashboard
-      router.refresh(); // Ensure server components update
-    } catch (error) {
-      console.error("Login error:", error); // Now it is used
-      toast.error("Something went wrong");
-    }
+      router.push("/");
+      router.refresh();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Invalid email or password");
+    },
+  });
+
+  function onSubmit(values: FormValues) {
+    loginMutation.mutate(values);
   }
 
   const date = new Date();
+  const isPending = loginMutation.isPending;
 
   return (
     <div className="flex justify-center items-center min-h-screen text-white">
@@ -83,11 +113,7 @@ const Login = () => {
         <div className="border border-[#1E293B] shadow-2xl backdrop-blur-sm rounded-[16px] w-full md:w-[400px] h-[426px] p-[33px]">
           <div className="flex flex-col gap-6">
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                {/* Email Field */}
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="email"
@@ -101,16 +127,15 @@ const Login = () => {
                             className="pl-10"
                             placeholder="admin@scriptmark.ai"
                             {...field}
+                            disabled={isPending}
                           />
                         </FormControl>
                       </div>
-                      {/* This component handles the error message display automatically */}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Password Field */}
                 <FormField
                   control={form.control}
                   name="password"
@@ -131,6 +156,7 @@ const Login = () => {
                             type={showPassword ? "text" : "password"}
                             placeholder="******"
                             {...field}
+                            disabled={isPending}
                           />
                         </FormControl>
                       </div>
@@ -142,8 +168,9 @@ const Login = () => {
                 <Button
                   type="submit"
                   className="w-full bg-[#135BEC] hover:bg-[#135becf2] border border-[#00000000] h-[46px] text-sm font-semibold"
+                  disabled={isPending}
                 >
-                  Sign In
+                  {isPending ? "Signing in…" : "Sign In"}
                 </Button>
               </form>
             </Form>

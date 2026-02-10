@@ -21,45 +21,92 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        // After client calls /api/auth/login, we pass token + userPayload to avoid calling external API again
+        token: { label: "Access Token", type: "text" },
+        userPayload: { label: "User Payload", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials) return null;
+
+        const token = credentials.token as string | undefined;
+        const userPayload = credentials.userPayload as string | undefined;
+
+        // Path 1: Client already logged in via /api/auth/login and passed token + user
+        if (token && userPayload) {
+          try {
+            const user = JSON.parse(userPayload) as { id?: string; email?: string; name?: string };
+            if (user?.email) {
+              return {
+                id: String(user.id ?? "1"),
+                email: user.email,
+                name: user.name ?? user.email,
+                accessToken: token,
+              };
+            }
+          } catch {
+            // invalid JSON, fall through to path 2
+          }
+        }
+
+        // Path 2: Classic email + password (e.g. direct signIn from form without going through /api/auth/login)
+        const email = credentials.email as string | undefined;
+        const password = credentials.password as string | undefined;
+        if (!email || !password) return null;
+
+        const apiUrl = (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+        if (!apiUrl) {
+          console.error("Auth: API_URL or NEXT_PUBLIC_API_URL is not set");
           return null;
         }
 
+        const loginUrl = `${apiUrl}/admin-api/auth/login/`;
+
         try {
-          // Hit Backend API
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/admin-api/auth/login/`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-            }
-          );
+          const res = await fetch(loginUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
 
-          const data = await res.json();
+          const contentType = res.headers.get("content-type");
+          const rawBody = await res.text();
 
-          if (!res.ok) {
-            // Throwing an error here will redirect to the error page with the message
-            throw new Error(data?.detail || "Invalid credentials");
+          if (!contentType?.includes("application/json")) {
+            console.error("Auth API non-JSON:", res.status, rawBody.substring(0, 300));
+            return null;
           }
 
-          // Return the object that matches the `User` interface in types
-          // Adjust 'data.user' fields based on exactly what your API returns
+          let data: Record<string, unknown>;
+          try {
+            data = JSON.parse(rawBody) as Record<string, unknown>;
+          } catch {
+            console.error("Auth API invalid JSON:", rawBody.substring(0, 300));
+            return null;
+          }
+
+          if (!res.ok) {
+            console.error("Auth API error:", res.status, (data?.detail as string) ?? (data?.message as string));
+            return null;
+          }
+
+          const user = (data.user ?? data) as Record<string, unknown>;
+          const firstName = (user.firstname ?? user.first_name) as string | undefined;
+          const lastName = (user.lastname ?? user.last_name) as string | undefined;
+          const accessToken = (data.access ?? data.access_token) as string | undefined;
+
+          if (!user?.email || !accessToken) {
+            console.error("Auth API success but missing user/token. Keys:", Object.keys(data));
+            return null;
+          }
+
           return {
-            id: data.user.id || "1", // Ensure ID exists
-            email: data.user.email,
-            name: `${data.user.firstname} ${data.user.lastname}`,
-            accessToken: data.access, // Storing the JWT access token
+            id: String(user.id ?? "1"),
+            email: user.email as string,
+            name: [firstName, lastName].filter(Boolean).join(" ") || (user.name as string) || (user.email as string),
+            accessToken,
           };
         } catch (error) {
-          console.error("Login Failed:", error);
+          console.error("Login request failed:", error);
           return null;
         }
       },

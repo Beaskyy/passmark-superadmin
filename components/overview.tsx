@@ -2,15 +2,14 @@
 "use client";
 
 import {
+  BookOpen,
+  Building2,
   CheckCircle,
-  CircleCheck,
-  Clock4,
+  FileCheck,
   FileText,
-  Hourglass,
-  TrendingUp,
-  TriangleAlert,
+  ClipboardList,
   Users,
-  DollarSign,
+  UserCheck,
 } from "lucide-react";
 import { CardComponent } from "@/components/card-component";
 import { Button } from "@/components/ui/button";
@@ -22,29 +21,26 @@ const Overview = () => {
   const { data: session, status: sessionStatus } = useSession();
   const { data, isLoading, error, refetch } = useAdminOverview();
 
-  // Show loading while checking authentication
   if (sessionStatus === "loading") {
     return <OverviewSkeleton />;
   }
 
-  // If not authenticated
   if (sessionStatus === "unauthenticated" || !session) {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-bold mb-4">Please log in</h2>
-        <Button onClick={() => window.location.href = "/login"}>
+        <Button onClick={() => (window.location.href = "/login")}>
           Go to Login
         </Button>
       </div>
     );
   }
 
-  // Show loading while fetching data
   if (isLoading) {
     return <OverviewSkeleton />;
   }
 
-  if (error || !data) {
+  if (error || !data?.data) {
     return (
       <main className="flex flex-col gap-8">
         <div className="flex md:flex-row flex-col justify-between md:items-center gap-6">
@@ -57,7 +53,7 @@ const Overview = () => {
         </div>
         <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-8 text-center">
           <p className="text-red-400 mb-4">
-            Error: {error?.message || "Failed to load dashboard data"}
+            Error: {error?.message || "Failed to load summary"}
           </p>
           <div className="flex gap-3 justify-center">
             <Button
@@ -68,7 +64,7 @@ const Overview = () => {
             </Button>
             <Button
               className="bg-gray-600 hover:bg-gray-700"
-              onClick={() => window.location.href = "/login"}
+              onClick={() => (window.location.href = "/login")}
             >
               Re-login
             </Button>
@@ -78,33 +74,20 @@ const Overview = () => {
     );
   }
 
-  // Process data...
-  const summary = data?.summary;
-  const monthly = data?.monthly_stats;
-  const scriptBreakdown = data?.breakdowns?.script_status || [];
-
-  const totalScripts = summary?.total_scripts || 0;
-  const pendingCount = scriptBreakdown
-    .filter((item) => item.status === "in_queue" || item.status === "pending")
-    .reduce((acc, curr) => acc + curr.count, 0);
-
-  const totalRevenue = summary?.total_revenue || 0;
-  const totalStudents = summary?.total_students || 0;
-  const scriptGrowth = monthly?.scripts_growth_percentage || 0;
-  const revenueGrowth = parseFloat(monthly?.revenue_growth_percentage || "0");
+  const d = data.data;
 
   return (
     <main className="flex flex-col gap-8">
-      {/* Header */}
       <div className="flex md:flex-row flex-col justify-between md:items-center gap-6">
         <div>
           <h2 className="md:text-2xl text-xl font-bold">Dashboard Overview</h2>
           <p className="text-sm text-[#94A3B8]">
-            Welcome back, {session.user?.name || "Admin"}! Here&apos;s what&apos;s happening with your scripts today.
+            Welcome back, {session.user?.name || "Admin"}! Here&apos;s your
+            summary.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
+          <Button
             className="bg-[#1E293B] hover:bg-[#1e293bed] py-2 px-4 h-[38px] text-sm font-bold"
             onClick={() => refetch()}
           >
@@ -116,50 +99,82 @@ const Overview = () => {
         </div>
       </div>
 
-      {/* Cards Grid */}
-      <div className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-5">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
         <CardComponent
-          title="Total Scripts"
-          content={totalScripts.toLocaleString()}
+          title="Total Users"
+          content={d.total_users.toLocaleString()}
           bgColor="#3B82F61A"
           color="#3B82F6"
-          color2={scriptGrowth >= 0 ? "#22C55E" : "#EF4444"}
-          trendText={`${scriptGrowth > 0 ? "+" : ""}${scriptGrowth}% this month`}
-          icon={FileText}
-          trendIcon={TrendingUp}
+          color2="#64748B"
+          trendText="Registered users"
+          icon={Users}
+          trendIcon={Users}
         />
 
         <CardComponent
-          title="Pending Grading"
-          content={pendingCount.toLocaleString()}
-          bgColor="#EAB3081A"
-          color="#EAB308"
-          color2="#EAB308"
-          trendText="Requires attention"
-          icon={Hourglass}
-          trendIcon={TriangleAlert}
-        />
-
-        <CardComponent
-          title="Total Revenue"
-          content={`$${totalRevenue.toLocaleString()}`}
-          bgColor="#A855F71A"
-          color="#A855F7"
-          color2={revenueGrowth >= 0 ? "#22C55E" : "#EF4444"}
-          trendText={`${revenueGrowth > 0 ? "+" : ""}${revenueGrowth.toFixed(1)}% this month`}
-          icon={DollarSign}
-          trendIcon={revenueGrowth >= 0 ? CircleCheck : TrendingUp}
-        />
-
-        <CardComponent
-          title="Total Students"
-          content={totalStudents.toLocaleString()}
+          title="Active Users"
+          content={d.total_active_users.toLocaleString()}
           bgColor="#22C55E1A"
           color="#22C55E"
           color2="#64748B"
-          trendText="Across all organisations"
-          icon={Users}
-          trendIcon={Clock4}
+          trendText="Currently active"
+          icon={UserCheck}
+          trendIcon={CheckCircle}
+        />
+
+        <CardComponent
+          title="Total Scripts"
+          content={d.total_scripts.toLocaleString()}
+          bgColor="#A855F71A"
+          color="#A855F7"
+          color2="#64748B"
+          trendText="All scripts"
+          icon={FileText}
+          trendIcon={FileText}
+        />
+
+        <CardComponent
+          title="Scripts Marked"
+          content={d.total_scripts_marked.toLocaleString()}
+          bgColor="#EAB3081A"
+          color="#EAB308"
+          color2="#64748B"
+          trendText="Graded / marked"
+          icon={FileCheck}
+          trendIcon={CheckCircle}
+        />
+
+        <CardComponent
+          title="Total Courses"
+          content={d.total_courses.toLocaleString()}
+          bgColor="#EC48991A"
+          color="#EC4899"
+          color2="#64748B"
+          trendText="Courses"
+          icon={BookOpen}
+          trendIcon={BookOpen}
+        />
+
+        <CardComponent
+          title="Total Assessments"
+          content={d.total_assessments.toLocaleString()}
+          bgColor="#06B6D41A"
+          color="#06B6D4"
+          color2="#64748B"
+          trendText="Assessments"
+          icon={ClipboardList}
+          trendIcon={ClipboardList}
+        />
+
+        <CardComponent
+          title="Organisations"
+          content={d.total_organisations.toLocaleString()}
+          bgColor="#8B5CF61A"
+          color="#8B5CF6"
+          color2="#64748B"
+          trendText="Organisations"
+          icon={Building2}
+          trendIcon={Building2}
         />
       </div>
     </main>
