@@ -34,3 +34,16 @@ export interface UsersListResponse {
   previous: string | null;
   data: User[];
 }
+
+export interface ActiveUser extends User {
+  scripts_marked_count: number;
+}
+
+export interface ActiveUsersListResponse {
+  status: boolean;
+  message: string;
+  count: number;
+  next: string | null;
+  previous: string | null;
+  data: ActiveUser[];
+}
