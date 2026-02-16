@@ -4,15 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { SummaryResponse } from "@/types/api";
 import { useSession } from "next-auth/react";
 
-async function fetchSummary(token: string): Promise<SummaryResponse> {
-  const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
-  const url = `${baseUrl}/admin-api/summary/`;
-
-  const response = await fetch(url, {
+async function fetchSummary(): Promise<SummaryResponse> {
+  const response = await fetch("/api/admin/summary", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     credentials: "include",
   });
@@ -21,7 +17,7 @@ async function fetchSummary(token: string): Promise<SummaryResponse> {
     let errorMessage = `Failed to fetch: ${response.status} ${response.statusText}`;
     try {
       const errorData = await response.json();
-      errorMessage = (errorData.detail ?? errorData.message ?? errorData.error) ?? errorMessage;
+      errorMessage = (errorData.error ?? errorData.detail ?? errorData.message) ?? errorMessage;
     } catch {
       const text = await response.text();
       if (text) errorMessage = text.slice(0, 200);
@@ -41,15 +37,12 @@ async function fetchSummary(token: string): Promise<SummaryResponse> {
 }
 
 export function useAdminOverview() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
 
   return useQuery({
-    queryKey: ["admin-summary", session?.accessToken],
-    queryFn: () => {
-      if (!session?.accessToken) throw new Error("No access token available");
-      return fetchSummary(session.accessToken);
-    },
-    enabled: !!session?.accessToken,
+    queryKey: ["admin-summary"],
+    queryFn: fetchSummary,
+    enabled: sessionStatus === "authenticated" && !!session,
     retry: 1,
     retryDelay: 1000,
     staleTime: 2 * 60 * 1000,

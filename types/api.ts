@@ -13,3 +13,24 @@ export interface SummaryResponse {
   message: string;
   data: SummaryData;
 }
+
+export interface User {
+  user_id: number;
+  email: string;
+  fullname: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  verified: boolean;
+  created_at: string;
+  organisation_id: string | null;
+  organisation_name: string | null;
+}
+
+export interface UsersListResponse {
+  status: boolean;
+  message: string;
+  count: number;
+  next: string | null;
+  previous: string | null;
+  data: User[];
+}
