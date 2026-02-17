@@ -7,8 +7,10 @@ import {
   PlusCircle, 
   CircleHelp, 
   ChevronDown, 
-  Command 
+  Command,
+  LogOut
 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,24 +25,40 @@ import { Navigation } from "./navigation"; // Ensure this path is correct
 import { toast } from "sonner";
 
 export const Header = () => {
+  const { data: session } = useSession();
+
+  // Extract initials or fallback
+  const userInitials = (() => {
+    const user = session?.user;
+    if (user?.name) {
+      const parts = user.name.split(" ");
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      return user.name.substring(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    return "??"; // Fallback if no user data
+  })();
+
   const logout = async () => {
     try {
-      // Call the logout API if needed
+      // Call the logout API if needed (best effort)
       const url = `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`;
-      const response = await fetch(url, {
+      await fetch(url, {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        toast.success(data.message || "Logged out successfully");
-      }
     } catch (error) {
       console.error("Logout API error:", error);
+    } finally {
+      // Always sign out of NextAuth
+      await signOut({ callbackUrl: "/login" });
     }
   };
 
@@ -108,7 +126,7 @@ export const Header = () => {
               <div className="flex items-center gap-2 pl-2 cursor-pointer">
                 <Avatar className="w-8 h-8 border border-[#334155]">
                   <AvatarImage src="/images/avatar.svg" alt="User" />
-                  <AvatarFallback className="bg-[#1E293B] text-[#94A3B8]">BS</AvatarFallback>
+                  <AvatarFallback className="bg-[#1E293B] text-[#94A3B8]">{userInitials}</AvatarFallback>
                 </Avatar>
                 <ChevronDown className="w-4 h-4 text-[#94A3B8]" />
               </div>
@@ -117,6 +135,7 @@ export const Header = () => {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-[#334155]" />
               <DropdownMenuItem className="cursor-pointer focus:bg-[#334155] focus:text-white" onClick={logout}>
+                <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
