@@ -16,6 +16,9 @@ import { Button } from "@/components/ui/button";
 import { OverviewSkeleton } from "@/components/overview-skeleton";
 import { useSession } from "next-auth/react";
 import { useAdminOverview } from "@/hooks/use-admin-overview";
+import { ScriptsMarkedChart } from "@/components/dashboard/scripts-marked-chart";
+import { AiVsHumanChart } from "@/components/dashboard/ai-vs-human-chart";
+import { ActiveUsersTable } from "@/components/dashboard/active-users-table";
 
 const Overview = () => {
   const { data: session, status: sessionStatus } = useSession();
@@ -109,6 +112,7 @@ const Overview = () => {
           trendText="Registered users"
           icon={Users}
           trendIcon={Users}
+          href="/users"
         />
 
         <CardComponent
@@ -120,6 +124,7 @@ const Overview = () => {
           trendText="Currently active"
           icon={UserCheck}
           trendIcon={CheckCircle}
+          href="/active-users" 
         />
 
         <CardComponent
@@ -131,6 +136,7 @@ const Overview = () => {
           trendText="All scripts"
           icon={FileText}
           trendIcon={FileText}
+          href="/scripts"
         />
 
         <CardComponent
@@ -142,6 +148,7 @@ const Overview = () => {
           trendText="Graded / marked"
           icon={FileCheck}
           trendIcon={CheckCircle}
+          href="/scripts?filter=marked"
         />
 
         <CardComponent
@@ -153,6 +160,7 @@ const Overview = () => {
           trendText="Courses"
           icon={BookOpen}
           trendIcon={BookOpen}
+          href="/courses"
         />
 
         <CardComponent
@@ -164,6 +172,7 @@ const Overview = () => {
           trendText="Assessments"
           icon={ClipboardList}
           trendIcon={ClipboardList}
+          href="/assessments"
         />
 
         <CardComponent
@@ -175,7 +184,21 @@ const Overview = () => {
           trendText="Organisations"
           icon={Building2}
           trendIcon={Building2}
+          href="/organisations"
         />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="">
+          <ScriptsMarkedChart />
+        </div>
+        <div className="">
+          <AiVsHumanChart />
+        </div>
+      </div>
+
+      <div>
+        <ActiveUsersTable />
       </div>
     </main>
   );

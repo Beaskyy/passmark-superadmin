@@ -1,6 +1,7 @@
 "use client"
 
 import { LucideIcon } from "lucide-react";
+import Link from "next/link";
 
 interface CardComponentProps {
   title: string;
@@ -22,9 +23,10 @@ export const CardComponent = ({
   trendText,
   icon: Icon,
   trendIcon: TrendIcon,
-}: CardComponentProps) => {
-  return (
-    <div className="border border-[#334155] rounded-xl p-6 bg-[#1E293B]">
+  href,
+}: CardComponentProps & { href?: string }) => {
+  const CardContent = () => (
+    <div className="border border-[#334155] rounded-xl p-6 bg-[#1E293B] cursor-pointer transition-all hover:bg-[#1E293B]/80 hover:border-[#334155]/80">
       <div className="flex justify-between">
         <div className="flex flex-col gap-2">
           <p className="text-xs tracking-[0.6px] text-[#94A3B8] font-bold uppercase">
@@ -47,4 +49,15 @@ export const CardComponent = ({
       </div>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        <CardContent />
+      </Link>
+    );
+  }
+
+  return <CardContent />;
 };
+
