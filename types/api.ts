@@ -76,3 +76,21 @@ export interface UserInsightsResponse {
   message: string;
   data: UserInsightsData;
 }
+
+export interface UserCourse {
+  course_id: string;
+  code: string;
+  title: string;
+  session: string;
+  description: string;
+  created_at: string;
+}
+
+export interface UserCoursesResponse {
+  status: boolean;
+  message: string;
+  count: number;
+  next: string | null;
+  previous: string | null;
+  data: UserCourse[];
+}

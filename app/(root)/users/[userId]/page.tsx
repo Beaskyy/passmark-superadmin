@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useParams } from "next/navigation"
 import { useUserInsights } from "@/hooks/use-user-insights"
+import { useUserCourses } from "@/hooks/use-user-courses"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ import {
     ArrowLeft
 } from "lucide-react"
 import Link from "next/link"
+import { UserCourse } from "@/types/api"
 
 export default function UserInsightsPage() {
     const params = useParams()
@@ -183,7 +185,57 @@ export default function UserInsightsPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Courses Section */}
+            <CoursesSection userId={userId} />
         </div>
+    )
+}
+
+function CoursesSection({ userId }: { userId: string }) {
+    const { data: coursesData, isLoading, isError } = useUserCourses({ userId })
+
+    return (
+        <Card className="bg-[#0F172A] border-[#1E293B] text-white">
+            <CardHeader>
+                <CardTitle>Enrolled Courses</CardTitle>
+                <CardDescription>Courses the user is currently or previously enrolled in.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[...Array(3)].map((_, i) => (
+                            <Skeleton key={i} className="h-24 rounded-lg bg-slate-800" />
+                        ))}
+                    </div>
+                ) : isError ? (
+                    <div className="text-red-400 text-sm">Failed to load courses.</div>
+                ) : !coursesData?.data?.length ? (
+                    <div className="text-slate-500 text-sm italic">No courses found.</div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {coursesData.data.map((course: UserCourse) => (
+                            <div key={course.course_id} className="p-4 rounded-lg border border-[#1E293B] bg-[#1E293B]/50 hover:bg-[#1E293B] transition-colors">
+                                <div className="flex justify-between items-start mb-2">
+                                    <Badge variant="outline" className="bg-[#0F172A] text-slate-300 border-[#334155]">
+                                        {course.code}
+                                    </Badge>
+                                    <span className="text-xs text-slate-500">{course.session || "No Session"}</span>
+                                </div>
+                                <h4 className="font-semibold text-sm mb-1 line-clamp-1" title={course.title}>{course.title}</h4>
+                                <p className="text-xs text-slate-400 line-clamp-2 min-h-[2.5em]">
+                                    {course.description || "No description provided."}
+                                </p>
+                                <div className="mt-3 pt-3 border-t border-[#334155]/50 flex items-center gap-2 text-xs text-slate-500">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>Joined {new Date(course.created_at).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     )
 }
 
