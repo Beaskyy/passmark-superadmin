@@ -47,3 +47,32 @@ export interface ActiveUsersListResponse {
   previous: string | null;
   data: ActiveUser[];
 }
+
+export interface UserCredits {
+  balance: number;
+  total_earned: number;
+  total_spent: number;
+}
+
+export interface UserDetails extends User {
+  firstname: string | null;
+  lastname: string | null;
+  phone: string | null;
+  department: string | null;
+  role: string | null;
+}
+
+export interface UserInsightsData {
+  user_details: UserDetails;
+  credits: UserCredits;
+  courses_count: number;
+  assessments_count: number;
+  scripts_count: number;
+  scripts_marked_count: number;
+}
+
+export interface UserInsightsResponse {
+  status: boolean;
+  message: string;
+  data: UserInsightsData;
+}

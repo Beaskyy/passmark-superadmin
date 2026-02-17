@@ -8,6 +8,7 @@ interface UseUsersListOptions {
   page?: number;
   limit?: number;
   enabled?: boolean;
+  accessToken?: string;
 }
 
 async function fetchUsersList(options?: UseUsersListOptions): Promise<UsersListResponse> {
@@ -15,14 +16,14 @@ async function fetchUsersList(options?: UseUsersListOptions): Promise<UsersListR
   if (options?.page) params.set("page", String(options.page));
   if (options?.limit) params.set("limit", String(options.limit));
 
-  const url = `/api/admin/users/list${params.toString() ? `?${params.toString()}` : ""}`;
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/admin-api/users/list/${params.toString() ? `?${params.toString()}` : ""}`;
 
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${options?.accessToken}`,
     },
-    credentials: "include",
   });
 
   if (!response.ok) {
@@ -35,7 +36,7 @@ async function fetchUsersList(options?: UseUsersListOptions): Promise<UsersListR
       if (text) errorMessage = text.slice(0, 200);
     }
     if (response.status === 401 || response.status === 403) {
-      window.location.href = "/login";
+      // window.location.href = "/login"; // Optional: handle redirect
       throw new Error("Unauthorized");
     }
     throw new Error(errorMessage);
@@ -50,11 +51,12 @@ async function fetchUsersList(options?: UseUsersListOptions): Promise<UsersListR
 
 export function useUsersList(options?: UseUsersListOptions) {
   const { data: session, status: sessionStatus } = useSession();
+  const accessToken = session?.accessToken;
 
   return useQuery({
-    queryKey: ["users-list", options?.page, options?.limit],
-    queryFn: () => fetchUsersList(options),
-    enabled: (options?.enabled ?? true) && sessionStatus === "authenticated" && !!session,
+    queryKey: ["users-list", options?.page, options?.limit, accessToken],
+    queryFn: () => fetchUsersList({ ...options, accessToken }),
+    enabled: (options?.enabled ?? true) && sessionStatus === "authenticated" && !!accessToken,
     retry: 1,
     retryDelay: 1000,
     staleTime: 30 * 1000, // 30 seconds

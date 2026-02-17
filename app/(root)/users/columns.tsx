@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal, MoreVertical } from "lucide-react"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -160,7 +161,9 @@ export const columns: ColumnDef<User>[] = [
               Copy User ID
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-[#334155]" />
-            <DropdownMenuItem className="focus:bg-[#334155] focus:text-white cursor-pointer">View customer</DropdownMenuItem>
+            <DropdownMenuItem asChild className="focus:bg-[#334155] focus:text-white cursor-pointer">
+                <Link href={`/users/${payment.id}`}>View User Insights</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className="focus:bg-[#334155] focus:text-white cursor-pointer">View payment details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
