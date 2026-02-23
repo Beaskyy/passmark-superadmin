@@ -14,6 +14,7 @@ import {
   LogOut, 
   Sparkles 
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -22,6 +23,23 @@ import { useState } from "react";
 export const Navigation = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+    // Extract initials or fallback
+    const userInitials = (() => {
+      const user = session?.user;
+      if (user?.name) {
+        const parts = user.name.split(" ");
+        if (parts.length >= 2) {
+          return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+        return user.name.substring(0, 2).toUpperCase();
+      }
+      if (user?.email) {
+        return user.email.substring(0, 2).toUpperCase();
+      }
+      return "??"; // Fallback if no user data
+    })();
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -105,10 +123,10 @@ export const Navigation = () => {
           <div className="bg-[#1E293B]/50 rounded-xl p-3 flex items-center justify-between border border-[#334155]/50 hover:bg-[#1E293B] transition-colors cursor-pointer group">
               <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-[#334155] flex items-center justify-center text-white font-medium text-sm">
-                      JS
+                  {userInitials}
                   </div>
                   <div className="flex flex-col">
-                      <span className="text-white text-sm font-semibold group-hover:text-[#3B82F6] transition-colors">Jane Smith</span>
+                      <span className="text-white text-sm font-semibold group-hover:text-[#3B82F6] transition-colors">{session?.user?.name}</span>
                       <span className="text-[#64748B] text-xs">Super Admin</span>
                   </div>
               </div>

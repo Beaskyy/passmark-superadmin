@@ -3,25 +3,40 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  Settings, 
-  LogOut, 
-  Sparkles 
-} from "lucide-react";
+import { Settings, LogOut, Sparkles } from "lucide-react";
 import { sidebarData } from "@/lib/data";
+import { useSession } from "next-auth/react";
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+    // Extract initials or fallback
+    const userInitials = (() => {
+      const user = session?.user;
+      if (user?.name) {
+        const parts = user.name.split(" ");
+        if (parts.length >= 2) {
+          return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+        return user.name.substring(0, 2).toUpperCase();
+      }
+      if (user?.email) {
+        return user.email.substring(0, 2).toUpperCase();
+      }
+      return "??"; // Fallback if no user data
+    })();
 
   return (
     <div className="w-[288px] bg-[#0B1120] h-screen fixed flex flex-col border-r border-[#1E293B]">
-      
       {/* 1. Header Section */}
       <div className="px-6 py-8 flex items-center gap-3">
         <div className="w-8 h-8 bg-[#2563EB] rounded-[8px] flex items-center justify-center text-white">
-            <Sparkles className="w-5 h-5 fill-white" />
+          <Sparkles className="w-5 h-5 fill-white" />
         </div>
-        <h1 className="text-white font-bold text-lg tracking-tight">ScriptMark AI</h1>
+        <h1 className="text-white font-bold text-lg tracking-tight">
+          ScriptMark AI
+        </h1>
       </div>
 
       {/* 2. Scrollable Navigation Section */}
@@ -34,7 +49,7 @@ export const Sidebar = () => {
                 {group.group}
               </h4>
             )}
-            
+
             {/* Links Loop */}
             <div className="space-y-0">
               {group.items.map((link) => {
@@ -47,16 +62,23 @@ export const Sidebar = () => {
                     href={link.href}
                     className={cn(
                       "flex items-center justify-between px-4 py-2.5 rounded-md transition-all duration-200 group",
-                      isActive 
-                        ? "bg-[#1E293B] text-[#3B82F6]" 
-                        : "text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50"
+                      isActive
+                        ? "bg-[#1E293B] text-[#3B82F6]"
+                        : "text-[#94A3B8] hover:text-white hover:bg-[#1E293B]/50",
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className={cn("w-5 h-5", isActive ? "text-[#3B82F6]" : "text-[#64748B] group-hover:text-white")} />
+                      <Icon
+                        className={cn(
+                          "w-5 h-5",
+                          isActive
+                            ? "text-[#3B82F6]"
+                            : "text-[#64748B] group-hover:text-white",
+                        )}
+                      />
                       <span className="text-sm font-medium">{link.name}</span>
                     </div>
-                    
+
                     {/* Optional "New" Badge */}
                     {link.badge && (
                       <span className="bg-[#172554] text-[#3B82F6] text-[10px] font-bold px-2 py-0.5 rounded border border-[#1E3A8A]">
@@ -74,7 +96,7 @@ export const Sidebar = () => {
       {/* 3. Footer Section (Settings + Profile) */}
       <div className="p-4 space-y-6 pt-6 border-t border-[#1E293B]">
         {/* Settings Link */}
-        <Link 
+        <Link
           href="/settings"
           className="flex items-center gap-3 px-4 text-[#94A3B8] hover:text-white transition-colors"
         >
@@ -84,16 +106,18 @@ export const Sidebar = () => {
 
         {/* User Profile Card */}
         <div className="bg-[#1E293B]/50 rounded-xl p-3 flex items-center justify-between border border-[#334155]/50 hover:bg-[#1E293B] transition-colors cursor-pointer group">
-            <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#334155] flex items-center justify-center text-white font-medium text-sm">
-                    JS
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-white text-sm font-semibold group-hover:text-[#3B82F6] transition-colors">Jane Smith</span>
-                    <span className="text-[#64748B] text-xs">Super Admin</span>
-                </div>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#334155] flex items-center justify-center text-white font-medium text-sm">
+            {userInitials}
             </div>
-            <LogOut className="w-4 h-4 text-[#64748B] hover:text-white" />
+            <div className="flex flex-col">
+              <span className="text-white text-sm font-semibold group-hover:text-[#3B82F6] transition-colors">
+                {session?.user?.name}
+              </span>
+              <span className="text-[#64748B] text-xs">Super Admin</span>
+            </div>
+          </div>
+          <LogOut className="w-4 h-4 text-[#64748B] hover:text-white" />
         </div>
       </div>
     </div>

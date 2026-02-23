@@ -22,7 +22,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "./navigation"; // Ensure this path is correct
-import { toast } from "sonner";
 
 export const Header = () => {
   const { data: session } = useSession();
