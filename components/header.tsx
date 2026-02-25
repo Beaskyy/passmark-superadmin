@@ -106,7 +106,7 @@ export const Header = () => {
           </Button>
 
           {/* Vertical Separator */}
-          <div className="h-6 w-[1px] bg-[#334155]" />
+          <div className="h-6 w-px bg-[#334155]" />
 
           {/* Notification Bell */}
           <button className="relative p-2 text-[#94A3B8] hover:text-white transition-colors">
